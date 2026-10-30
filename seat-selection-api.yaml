@@ -1,0 +1,63 @@
+openapi: 3.0.3
+info:
+  title: Movie Theater Seat Selection API
+  version: 1.0.0
+  description: >
+    Lets a customer view the seat map for a showtime and temporarily hold
+    seats before checkout. Unpaid holds expire after 10 minutes.
+paths:
+  /showtimes/{showtimeId}/seats:
+    get:
+      summary: Get the seat map for a showtime
+      parameters:
+        - name: showtimeId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Seats with their status (available, held, sold)
+        '404':
+          description: Showtime not found
+  /showtimes/{showtimeId}/reservations:
+    post:
+      summary: Hold selected seats
+      parameters:
+        - name: showtimeId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                seatIds:
+                  type: array
+                  items:
+                    type: string
+      responses:
+        '201':
+          description: Seats held; returns reservationId, total price, and expiry time
+        '409':
+          description: One or more seats are no longer available
+  /reservations/{reservationId}:
+    delete:
+      summary: Release held seats
+      parameters:
+        - name: reservationId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Hold released
+        '404':
+          description: Reservation not found
+        '410':
+          description: Hold already expired
